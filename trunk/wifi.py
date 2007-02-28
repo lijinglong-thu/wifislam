@@ -5,9 +5,6 @@ import time
 import threading
 import locator
 
-#TODO: This slows down over time. So clearly at some point we are picking up too much data.
-# My guess is that we are iterating over the networks somewhere.
-
 class Scanner:
 
     def __init__(self):
@@ -48,11 +45,11 @@ class Scanner:
                 if(not (mac, essid) in self.networks):
                     self.networks[(mac, essid)] = Network(mac, essid)
                 self.networks[(mac, essid)].addScan(signal, currentTime)
-                self.locator.Update(mac, 10**((-32-signal)/25.0))
+                #self.locator.Update(mac, 10**((-32-signal)/25.0))
                 self.saveLine(mac, essid, signal)
         except IndexError:
             print 'Index Error!'
-        self.locator.ReSample()
+        #self.locator.ReSample()
         if(currentTime>self.lastNetworkSave+3): #Network save window
             self.saveNetworks()
 
@@ -76,12 +73,8 @@ class Scanner:
         self.traceFile.write('\n')
 
     def saveNetworks(self):
-        newNetworks = {}
-        for key in self.networks:
-            if(len(self.networks[key].signalLevels)>0):
-                newNetworks[key] = self.networks[key]
-            self.networks[key].saveLine(self.networks.values())
-        self.networks = newNetworks
+        for network in self.networks.values():
+            network.saveLine(self.networks.values())
         self.lastNetworkSave = time.time()
 
     def printOut(self):
