@@ -1,6 +1,6 @@
 #! /usr/bin/python2.4
 
-
+import math
 import random
 import loc
 
@@ -8,6 +8,7 @@ class Locator:
 
     def __init__(self):
         self.numParticles = 5000
+        self.prevMaxParticle = None
         self.maxParticle = None
         self.particles = []
         self.macToLL = {}
@@ -16,7 +17,7 @@ class Locator:
         for i in range(self.numParticles):
             self.particles.append(Particle())
             self.particles[-1].Init(47.66, -122.31, .08, .08)
-        self.LoadIDFile('./maps/test-4.id')
+        self.LoadIDFile('./maps/test-11.id')
 
     def LoadIDFile(self, name):
         data=open(name).read().split('\n')
@@ -39,12 +40,14 @@ class Locator:
             print "Don't have a location for:", mac
 
     def ReSample(self):
-        #print 'Start resample'
         newParticles = []
         totalLikelihood, maxLikelihood = 0.0, -1
+        if(self.maxParticle!=None):
+            self.maxParticle.likelihood=0
         for p in self.particles:
             if(p.likelihood>maxLikelihood):
                 maxLikelihood = p.likelihood
+                self.prevMaxParticle = self.maxParticle
                 self.maxParticle = p
             totalLikelihood += p.likelihood
         if(totalLikelihood == 0):
@@ -53,55 +56,79 @@ class Locator:
         print 'Lat:', self.maxParticle.lat
         print 'Lon:', self.maxParticle.lon
         print 'L:',maxLikelihood
-        delta = totalLikelihood / self.numParticles
+        print '-logL:', -math.log(maxLikelihood)
+        delta = totalLikelihood / (self.numParticles-20)
         goal, total = random.uniform(0, delta), 0
         for p in self.particles:
             total += p.likelihood
             while(total >= goal):
                 newParticles.append(p.Copy())
                 goal += delta
-            if(len(newParticles)+100>self.numParticles):
+            if(len(newParticles)+20>self.numParticles):
                 break
         while(len(newParticles)<self.numParticles):
             newParticles.append(Particle())
-            newParticles[-1].Init(47.66, -122.31, .08, .08)
-
+            newParticles[-1].Init(47.66, -122.31, .03, .03)
         self.particles = newParticles
         for p in self.particles:
             p.Perturb()
 
     def GetLocation(self):
+        #return self.ReturnOldBestParticle()
+        return self.ReturnAveLoc()
+
+    def ReturnOldBestParticle(self):
+        if(self.prevMaxParticle!=None):
+            return ((self.maxParticle.lat+self.maxParticle.lat)/2,
+                    (self.maxParticle.lon+self.maxParticle.lon)/2)
         return (self.maxParticle.lat, self.maxParticle.lon)
+
+    def ReturnAveLoc(self):
+        aveLat, aveLon, count = 0.0,0.0,0
+        for p in self.particles:
+            if((p.lat!=0)&(p.lon!=0)):
+                aveLat+=p.lat
+                aveLon+=p.lon
+                count += 1
+        if(count==0):
+            return self.ReturnOldBestParticle()
+        return (aveLat / count, aveLon/count)
+
+    def ReturnBinnedParticle(self):
+        #print 'This should bin particles, pick a popular bin, then average
+        #all of the particles in that bin.
+        return self.ReturnOldBestParticle()
 
 
 class Particle:
     def __init__(self):
-        self.lat = None
-        self.lon = None
-        self.likelihood = None
-        self.noise = .005
+        self.lat = 0.0
+        self.lon = 0.0
+        self.likelihood = 1
+        self.noise = .0001
 
     def Init(self, lat, lon, r1, r2):
         self.lat = random.gauss(lat, r1)
         self.lon = random.gauss(lon, r2)
-        self.likelihood = 0
+        self.likelihood = 1
 
     def Update(self, lat, lon, dist):
         d = loc.LatLongDist(self.lat, lat, self.lon, lon)
         #print 'Lat', self.lat
         #print 'Lat', lat
-        
         #print 'd:', d
         #print 'dsit:', dist
-        self.likelihood = 1 / (1+(d-dist)*(d-dist))
+        self.likelihood *= 1 / (1+(d-dist)*(d-dist))
         #print 'likelihood:', self.likelihood
 
     def Perturb(self):
         self.lat = random.gauss(self.lat, self.noise)
         self.lon = random.gauss(self.lon, self.noise)
+        self.likelihood = 1
 
     def Copy(self):
         p = Particle()
         p.lat = self.lat
         p.lon = self.lon
+        p.likelihood = self.likelihood
         return p
