@@ -46,7 +46,8 @@ class Tracer:
 def main():
     t = Tracer()
     t.Init()
-    t.loadTrace('1172594315.out')
+    t.loadTrace('1172767258.out')
+    #t.loadTrace('1172594315.out')
     #t.loadTrace('1172608619.out')
     #for f in os.listdir('./traces/'):
     #    t.loadTrace(f)
