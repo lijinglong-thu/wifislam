@@ -100,7 +100,7 @@ class Locator:
         #47.654
         prec=1000
         maxCount,maxKey=0,None
-        for p in particle:
+        for p in self.particles:
             lat=int(p.lat*prec)/prec
             lon=int(p.lon*prec)/prec
             key=(lat, lon)
@@ -112,14 +112,14 @@ class Locator:
                 maxKey=key
                 maxCount=len(bins[key])
         if(maxKey==None):
-            return self.ReturnOldBestParticle()
+            return self.ReturnAveLoc()
         aveLat, aveLon, count = 0.0,0.0,0
         for p in bins[maxKey]:
             aveLat+=p.lat
             aveLon+=p.lon
             count+=1
         if(count==0):
-            return self.ReturnOldBestParticle()
+            return self.ReturnAveLoc()
         return (aveLat/count, aveLon/count)
 
 
