@@ -31,6 +31,8 @@ class Tracer:
                     f.write(str(lon)+'\t'+str(lat))
                     lat,lon=self.locator.ReturnAveLoc()
                     f.write('\t'+str(lon)+'\t'+str(lat))
+                    lat,lon=self.locator.GetLocation()
+                    f.write('\t'+str(lon)+'\t'+str(lat))
                     if(oldLat!=0.0):
                         f.write('\t'+str((lon+oldLon)/2)+'\t'+str((lat+oldLat)/2))
                     oldLat,oldLon=lat,lon
