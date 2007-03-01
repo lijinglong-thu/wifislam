@@ -75,7 +75,8 @@ class Locator:
 
     def GetLocation(self):
         #return self.ReturnOldBestParticle()
-        return self.ReturnAveLoc()
+        #return self.ReturnAveLoc()
+        return self.ReturnBinnedParticle()
 
     def ReturnOldBestParticle(self):
         if(self.prevMaxParticle!=None):
@@ -92,12 +93,34 @@ class Locator:
                 count += 1
         if(count==0):
             return self.ReturnOldBestParticle()
-        return (aveLat / count, aveLon/count)
+        return (aveLat/count, aveLon/count)
 
     def ReturnBinnedParticle(self):
-        #print 'This should bin particles, pick a popular bin, then average
-        #all of the particles in that bin.
-        return self.ReturnOldBestParticle()
+        bins = {}
+        #47.654
+        prec=1000
+        maxCount,maxKey=0,None
+        for p in particle:
+            lat=int(p.lat*prec)/prec
+            lon=int(p.lon*prec)/prec
+            key=(lat, lon)
+            if(key in bins):
+                bins[key].append(p)
+            else:
+                bins[key]=[p]
+            if(len(bins[key])>maxCount):
+                maxKey=key
+                maxCount=len(bins[key])
+        if(maxKey==None):
+            return self.ReturnOldBestParticle()
+        aveLat, aveLon, count = 0.0,0.0,0
+        for p in bins[maxKey]:
+            aveLat+=p.lat
+            aveLon+=p.lon
+            count+=1
+        if(count==0):
+            return self.ReturnOldBestParticle()
+        return (aveLat/count, aveLon/count)
 
 
 class Particle:

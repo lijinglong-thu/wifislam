@@ -3,9 +3,6 @@
 import os
 import locator
 
-# TODO: how far are my variances in meters?
-# TODO: improve my getLocation location determiner.
-# TODO: move this into a google project! svn!
 
 class Tracer:
 
@@ -32,7 +29,7 @@ class Tracer:
                 if(oldTime!=0):
                     lat,lon=self.locator.ReturnOldBestParticle()
                     f.write(str(lon)+'\t'+str(lat))
-                    lat,lon=self.locator.GetLocation()
+                    lat,lon=self.locator.ReturnAveLoc()
                     f.write('\t'+str(lon)+'\t'+str(lat))
                     if(oldLat!=0.0):
                         f.write('\t'+str((lon+oldLon)/2)+'\t'+str((lat+oldLat)/2))
