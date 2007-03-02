@@ -7,7 +7,7 @@ import loc
 class Locator:
 
     def __init__(self):
-        self.numParticles = 10000
+        self.numParticles = 5000
         self.prevMaxParticle = None
         self.maxParticle = None
         self.particles = []
@@ -98,7 +98,7 @@ class Locator:
     def ReturnBinnedParticle(self):
         bins = {}
         #47.654
-        prec=1000
+        prec=10000
         maxCount,maxKey=0,None
         for p in self.particles:
             lat=int(p.lat*prec)/prec
@@ -128,7 +128,7 @@ class Particle:
         self.lat = 0.0
         self.lon = 0.0
         self.likelihood = 1
-        self.noise = .00001
+        self.noise = .00005
 
     def Init(self, lat, lon, r1, r2):
         self.lat = random.gauss(lat, r1)
@@ -141,7 +141,8 @@ class Particle:
         #print 'Lat', lat
         #print 'd:', d
         #print 'dsit:', dist
-        self.likelihood *= 1 / (1+(d-dist)*(d-dist))
+        d = (1+(d-dist)*(d-dist))**.5
+        self.likelihood *= 1 / d
         #print 'likelihood:', self.likelihood
 
     def Perturb(self):
