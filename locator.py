@@ -9,6 +9,7 @@ class Locator:
     def __init__(self):
         self.numParticles = 3000
         self.prevMaxParticle = None
+        self.updateCount=1
         self.maxParticle = None
         self.particles = []
         self.macToLL = {}
@@ -33,6 +34,7 @@ class Locator:
     def Update(self, mac, dist):
         mac = mac.replace(':', '')
         if(mac in self.macToLL):
+            self.updateCount+=1
             lat, lon = self.macToLL[mac]
             for particle in self.particles:
                 particle.Update(lat, lon, dist)
@@ -56,7 +58,8 @@ class Locator:
         print 'Lat:', self.maxParticle.lat
         print 'Lon:', self.maxParticle.lon
         print 'L:',maxLikelihood
-        print '-logL:', -math.log(maxLikelihood)
+        print '-logL:', -math.log(maxLikelihood) / self.updateCount
+        self.updateCount=1
         delta = totalLikelihood / (self.numParticles-20)
         goal, total = random.uniform(0, delta), 0
         for p in self.particles:
@@ -74,8 +77,6 @@ class Locator:
             p.Perturb()
 
     def GetLocation(self):
-        #return self.ReturnOldBestParticle()
-        #return self.ReturnAveLoc()
         return self.ReturnBinnedParticle()
 
     def ReturnOldBestParticle(self):
@@ -97,7 +98,6 @@ class Locator:
 
     def ReturnBinnedParticle(self):
         bins = {}
-        #47.654
         prec=10000
         maxCount,maxKey=0,None
         for p in self.particles:
