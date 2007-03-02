@@ -98,19 +98,20 @@ class Locator:
 
     def ReturnBinnedParticle(self):
         bins = {}
-        prec=10000
+        prec=1000
         maxCount,maxKey=0,None
         for p in self.particles:
-            lat=int(p.lat*prec)/prec
-            lon=int(p.lon*prec)/prec
-            key=(lat, lon)
-            if(key in bins):
+            key1=(1, int(p.lat*prec)/prec, int(p.lon*prec)/prec)
+            key2=(2, int(p.lat*prec+.5)/prec, int(p.lon*prec)/prec)
+            key3=(3, int(p.lat*prec)/prec, int(p.lon*prec+.5)/prec)
+            key4=(4, int(p.lat*prec+.5)/prec, int(p.lon*prec+.5)/prec)
+            for key in [key1, key2, key3, key4]:
+                if(not key in bins):
+                    bins[key]=[p]    
                 bins[key].append(p)
-            else:
-                bins[key]=[p]
-            if(len(bins[key])>maxCount):
-                maxKey=key
-                maxCount=len(bins[key])
+                if(len(bins[key])>maxCount):
+                    maxKey=key
+                    maxCount=len(bins[key])
         if(maxKey==None):
             return self.ReturnAveLoc()
         aveLat, aveLon, count = 0.0,0.0,0
@@ -128,7 +129,7 @@ class Particle:
         self.lat = 0.0
         self.lon = 0.0
         self.likelihood = 1
-        self.noise = .0005
+        self.noise = .00005
 
     def Init(self, lat, lon, r1, r2):
         self.lat = random.gauss(lat, r1)
