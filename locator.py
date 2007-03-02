@@ -7,7 +7,7 @@ import loc
 class Locator:
 
     def __init__(self):
-        self.numParticles = 5000
+        self.numParticles = 3000
         self.prevMaxParticle = None
         self.maxParticle = None
         self.particles = []
@@ -128,7 +128,7 @@ class Particle:
         self.lat = 0.0
         self.lon = 0.0
         self.likelihood = 1
-        self.noise = .00005
+        self.noise = .0005
 
     def Init(self, lat, lon, r1, r2):
         self.lat = random.gauss(lat, r1)
