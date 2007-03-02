@@ -23,28 +23,44 @@ class GraphSolver:
     def Solve(self):
         self.InitSolve()
         print '[]'
-        time.sleep(5)
+        #time.sleep(5)
         self.graph.InitHeap()
         print '[]'
-        time.sleep(5)
+        #time.sleep(5)
         for i in range(1000):
             print i, ': Current Score:', self.GetGraphScore()
             print 'Perturbing . . .'
             self.graph.Perturb()
             print 'Sleeping . . .'
-            time.sleep(10)
+            #time.sleep(10)
             print 'Perturbing by heap . . .'
             self.graph.PerturbByHeap()
             self.SaveGraph(i)
             print 'Sleeping . . .'
-            time.sleep(10)
+            #time.sleep(10)
+
 
     def SaveGraph(self, i):
+        self.SaveGraphNames(i)
         f=open('./maps/test-'+str(i)+'.data','w')
         for mac in self.graph.nodes:
             n=self.graph.nodes[mac]
             if((n.lat!=0.0)&(n.lon!=0.0)):
-                f.write(str(n.lat)+'\t'+str(n.lon)+'\n')
+                if(n.fixed):
+                    f.write(str(n.lon)+'\t'+str(n.lat)+'\t'+str(n.lat)+'\n')
+                else:
+                    f.write(str(n.lon)+'\t'+str(n.lat)+'\n')
+        f.close()
+
+    def SaveGraphNames(self, i):
+        f=open('./maps/test-'+str(i)+'.id','w')
+        for mac in self.graph.nodes:
+            n=self.graph.nodes[mac]
+            if((n.lat!=0.0)&(n.lon!=0.0)):
+                if(n.fixed):
+                    f.write(n.uniqueID+'\t'+str(n.lon)+'\t'+str(n.lat)+'\t'+str(n.lat)+'\n')
+                else:
+                    f.write(n.uniqueID+'\t'+str(n.lon)+'\t'+str(n.lat)+'\n')
         f.close()
 
     def GetGraphScore(self):
@@ -78,6 +94,7 @@ class GraphSolver:
         toReturn = Queue.Queue()
         for node in self.graph.fixedPoints:
             node.root = node.uniqueID
+            node.fixed = True
             print 'LL', node.lat, node.lon
             node.distToRoot = 0
             for n in node.neighbors:
@@ -126,20 +143,20 @@ class Graph:
             heapq.heappush(self.heap, (-n.GetScore(self, True), n))
 
     def PerturbByHeap(self):
-        for i in range(50):
+        for i in range(100):
             score, n = heapq.heappop(self.heap)
             minScore, minLL = -score, (n.lat, n.lon)
             l1, l2 = minLL
             if(minLL==(0.0,0.0)):
                 continue
-            for i in range(10):
+            for i in range(20):
                 n.Perturb(l1, l2)
                 s = n.GetScore(self, True)
-                if((s < minScore)|(minScore==0)):
+                if(s < minScore):
                     minScore = s
                     minLL = (n.lat, n.lon)    
                 n.lat, n.lon = minLL
-                heapq.heappush(self.heap, (-minScore, n))
+            heapq.heappush(self.heap, (-minScore, n))
 
     def Perturb(self):
         for mac in self.nodes:
@@ -148,10 +165,10 @@ class Graph:
             l1, l2 = minLL
             if(minLL==(0.0,0.0)):
                continue
-            for i in range(10):
+            for i in range(30):
                 n.Perturb(l1, l2)
                 s = n.GetScore(self, False)
-                if((s < minScore)|(minScore==0)):
+                if(s < minScore):
                     minScore = s
                     minLL = (n.lat, n.lon)
             n.lat, n.lon = minLL
@@ -167,12 +184,16 @@ class Node:
         self.root = None
         self.lat = 0.0
         self.lon = 0.0
+        self.fixed = False
     
     def addNeighbor(self, node, graph):
         mac,dist=node
         if(not mac in self.neighbors):
             self.neighbors[mac]=dist
-            graph.nodes[mac].addNeighbor((self.uniqueID, dist), graph)
+            try:
+                graph.nodes[mac].addNeighbor((self.uniqueID, dist), graph)
+            except KeyError:
+                pass
 
     def findLocalRoot(self, g):
         if(self.root!=None):
@@ -195,7 +216,11 @@ class Node:
                 continue
             dist = self.neighbors[n]
             d=loc.LatLongDist(self.lat, actual2.lat, self.lon, actual2.lon)
-            totalScore += ((d-dist)*(d-dist))
+            if(d>dist):
+                if((actual2.fixed)|(self.fixed)):
+                    totalScore += 100 * (d/dist-1.0)
+                else:
+                    totalScore += (d/dist-1.0)
         if(not all):
             return totalScore
         for mac in graph.nodes:
@@ -205,15 +230,16 @@ class Node:
             if((actual2.root==None)|(actual2.lat==0)):
                 continue
             d=loc.LatLongDist(self.lat, actual2.lat, self.lon, actual2.lon)
-            if(d<200):
-                totalScore += ((d-300)*(d-300))
+            if((d<300)&(d>0)):
+                totalScore += (400/d - .5)
         return totalScore
-        
 
     def Perturb(self, l1, l2):
         a,b=0.0,0.0
+        if(self.fixed):
+            return
         r=random.random()
-        if(r<.33):
+        if(r<.1):
             a=random.gauss(l1, .0001)
             b=random.gauss(l2, .0001)
         elif(r>.66):

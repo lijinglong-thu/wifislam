@@ -79,7 +79,7 @@ class Grapher:
                     minDist[mac] = dist
             except ValueError, err:
                 print 'ERROR1'
-                print line
+                print 'Line:', line
                 print err
                 break
         for key in minDist:
