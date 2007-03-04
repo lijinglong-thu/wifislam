@@ -18,12 +18,15 @@ class Locator:
         for i in range(self.numParticles):
             self.particles.append(Particle())
             self.particles[-1].Init(47.66, -122.31, .08, .08)
-        self.LoadIDFile('./maps/test-11.id')
+        #self.LoadIDFile('./maps/test-11.id')
+        #self.LoadIDFile('./newMap.data')
+        for i in range(10):
+            self.LoadIDFile('./newMap-'+str(i)+'-10.data')
 
     def LoadIDFile(self, name):
         data=open(name).read().split('\n')
         for line in data:
-            if(len(line)<3):
+            if(len(line.split('\t'))!=3):
                 continue
             try:
                 mac, lon, lat = line.split('\t')
@@ -83,7 +86,14 @@ class Locator:
         if(self.prevMaxParticle!=None):
             return ((self.maxParticle.lat+self.maxParticle.lat)/2,
                     (self.maxParticle.lon+self.maxParticle.lon)/2)
-        return (self.maxParticle.lat, self.maxParticle.lon)
+        if(self.maxParticle!=None):
+            return (self.maxParticle.lat, self.maxParticle.lon)
+        else:
+            maxP=self.particles[0]
+            for p in self.particles:
+                if(p.likelihood>maxP.likelihood):
+                    maxP=p
+            return (maxP.lat, maxP.lon)
 
     def ReturnAveLoc(self):
         aveLat, aveLon, count = 0.0,0.0,0
@@ -142,8 +152,14 @@ class Particle:
         #print 'Lat', lat
         #print 'd:', d
         #print 'dsit:', dist
-        d = (1+(d-dist)*(d-dist))**.5
-        self.likelihood *= 1 / d
+        #d = (1+(d-dist)*(d-dist))**.5
+        r=(d-dist)
+        if(r<0):
+            r=-r
+        d = math.log(1+r)
+        if(d>1000):
+            d=100
+        self.likelihood += (100-d)
         #print 'likelihood:', self.likelihood
 
     def Perturb(self):

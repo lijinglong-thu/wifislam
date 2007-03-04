@@ -8,13 +8,14 @@ class Tracer:
 
     def __init__(self):
         self.locator = locator.Locator()
+        self.ReSampleCount = 3
 
     def Init(self):
         self.locator.Init()
 
     def loadTrace(self, name):
         data=open('./traces/'+name).read().split('\n')
-        f=open('./paths/test-trace-'+name,'w')
+        f=open('./paths/new-trace-'+name,'w')
         oldTime,total,count=0,len(data),0
         oldLat, oldLon = 0.0, 0.0
         ooldLat, ooldLon = 0.0, 0.0
@@ -45,7 +46,8 @@ class Tracer:
                     oldLat,oldLon=lat,lon
                     f.write('\n')
                     f.flush()
-                self.locator.ReSample()
+                if(t%self.ReSampleCount==0):
+                    self.locator.ReSample()
                 oldTime=t
 
 
@@ -56,7 +58,9 @@ def main():
     t.loadTrace('1172767258.out')
     #t.loadTrace('1172594315.out')
     #t.loadTrace('1172608619.out')
-    for f in os.listdir('./traces/'):
+    files=os.listdir('./traces/')
+    files.reverse()
+    for f in files:
         t.loadTrace(f)
 
 main()
