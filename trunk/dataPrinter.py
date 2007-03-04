@@ -39,10 +39,9 @@ class DataPrinter:
                 mac=mac.replace(':','')
                 if(mac in self.locator.macToLL):
                     lat,lon=self.locator.macToLL[mac]
-                    if((lat<47.655)):
-                        if(lon>-122.31):
-                            self.AddTrace(int(t), mac, int(ss))
-
+                    #if((lat<47.655)):
+                    #    if(lon>-122.31):
+                    self.AddTrace(int(t), mac, int(ss))
 
     def SortTraces(self):
         self.times.sort()
@@ -89,17 +88,19 @@ class DataPrinter:
 def main():
     print 'DataPrinter!'
     d = DataPrinter()
+    # Second outdoor trace.
+    d.OpenTrace('1172874075.out')
     # Allen Center floor two.
     #d.OpenTrace('1172780027.out')
     #
     #d.OpenTrace('1172507645.out')
     #d.OpenTrace('1172249788.out')
     #d.OpenTrace('1172175199.out')
-    for f in os.listdir('./traces'):
-        if(f.find('.out')>-1):
-            if(len(d.times)>4000):
-                break
-            d.OpenTrace(f)
+    #for f in os.listdir('./traces'):
+    #    if(f.find('.out')>-1):
+    #        if(len(d.times)>4000):
+    #            break
+    #        d.OpenTrace(f)
     d.WriteTraces()
 
 main()
