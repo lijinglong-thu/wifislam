@@ -7,7 +7,7 @@ import loc
 class Locator:
 
     def __init__(self):
-        self.numParticles = 1000
+        self.numParticles = 2000
         self.prevMaxParticle = None
         self.updateCount=1
         self.maxParticle = None
@@ -18,8 +18,8 @@ class Locator:
         for i in range(self.numParticles):
             self.particles.append(Particle())
             self.particles[-1].Init(47.66, -122.31, .08, .08)
-        #self.LoadIDFile('./maps/test-11.id')
-        self.LoadIDFile('./map2.data')
+        self.LoadIDFile('./maps/test-32.id')
+        #self.LoadIDFile('./map2.data')
         #for i in range(10):
         #    self.LoadIDFile('./newMap-'+str(i)+'-10.data')
 
@@ -50,11 +50,11 @@ class Locator:
         if(self.maxParticle!=None):
             self.maxParticle.likelihood=0
         for p in self.particles:
-            if(p.likelihood>maxLikelihood):
-                maxLikelihood = p.likelihood
+            if(p.GetLikelihood()>maxLikelihood):
+                maxLikelihood = p.GetLikelihood()
                 self.prevMaxParticle = self.maxParticle
                 self.maxParticle = p
-            totalLikelihood += p.likelihood
+            totalLikelihood += p.GetLikelihood()
         if(totalLikelihood == 0):
             return
         print '***'
@@ -66,7 +66,7 @@ class Locator:
         delta = totalLikelihood / (self.numParticles-20)
         goal, total = random.uniform(0, delta), 0
         for p in self.particles:
-            total += p.likelihood
+            total += p.GetLikelihood()
             while(total >= goal):
                 newParticles.append(p.Copy())
                 goal += delta
@@ -91,7 +91,7 @@ class Locator:
         else:
             maxP=self.particles[0]
             for p in self.particles:
-                if(p.likelihood>maxP.likelihood):
+                if(p.GetLikelihood()>maxP.GetLikelihood()):
                     maxP=p
             return (maxP.lat, maxP.lon)
 
@@ -107,10 +107,9 @@ class Locator:
         return (aveLat/count, aveLon/count)
 
     def ReturnBinnedParticle(self):
-        #TODO: grab best bin by sum of likelihood
-        bins = {}
+        sums,bins = {}, {}
         prec=1000
-        maxCount,maxKey=0,None
+        maxKey=None
         for p in self.particles:
             key1=(1, int(p.lat*prec)/prec, int(p.lon*prec)/prec)
             key2=(2, int(p.lat*prec+.5)/prec, int(p.lon*prec)/prec)
@@ -118,19 +117,22 @@ class Locator:
             key4=(4, int(p.lat*prec+.5)/prec, int(p.lon*prec+.5)/prec)
             for key in [key1, key2, key3, key4]:
                 if(not key in bins):
-                    bins[key]=[p]    
+                    bins[key]=[]
+                    sums[key]=0.0
                 bins[key].append(p)
-                if(len(bins[key])>maxCount):
+                sums[key]+=p.GetLikelihood()
+                if(maxKey==None):
                     maxKey=key
-                    maxCount=len(bins[key])
+                if(sums[key]>sums[maxKey]):
+                    maxKey=key
         if(maxKey==None):
             return self.ReturnAveLoc()
-        aveLat, aveLon, count = 0.0,0.0,0
+        aveLat, aveLon, count = 0.0,0.0,0.0
         for p in bins[maxKey]:
-            aveLat+=p.lat
-            aveLon+=p.lon
-            count+=1
-        if(count==0):
+            aveLat+=p.lat*p.GetLikelihood()
+            aveLon+=p.lon*p.GetLikelihood()
+            count+=p.GetLikelihood()
+        if(count==0.0):
             return self.ReturnAveLoc()
         return (aveLat/count, aveLon/count)
 
@@ -140,6 +142,8 @@ class Particle:
         self.lat = 0.0
         self.lon = 0.0
         self.likelihood = 1
+        self.elikelihood = 1
+        self.valid = False
         self.noise = .00005
 
     def Init(self, lat, lon, r1, r2):
@@ -160,8 +164,15 @@ class Particle:
         d = math.log(1+r)
         if(d>100):
             d=100
-        self.likelihood += (100-d)
+        self.likelihood += d
+        self.valid = False
         #print 'likelihood:', self.likelihood
+
+    def GetLikelihood(self):
+        if(not self.valid):
+            self.valid = True
+            self.elikelihood = 2**-self.likelihood
+        return self.elikelihood
 
     def Perturb(self):
         self.lat = random.gauss(self.lat, self.noise)
