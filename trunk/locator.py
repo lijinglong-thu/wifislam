@@ -4,6 +4,11 @@ import math
 import random
 import loc
 
+# TODO: can I do better with making paths out of particle estimates?
+#       Perhaps something with estimating current velocity and adding that
+#       to the perturb gaussians?
+
+
 class Locator:
 
     def __init__(self):
@@ -144,7 +149,7 @@ class Particle:
         self.likelihood = 1
         self.elikelihood = 1
         self.valid = False
-        self.noise = .00005
+        self.noise = .00002
 
     def Init(self, lat, lon, r1, r2):
         self.lat = random.gauss(lat, r1)

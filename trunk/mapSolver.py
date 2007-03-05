@@ -144,6 +144,7 @@ class Graph:
 
     def PerturbByHeap(self):
         for i in range(100):
+            print str(i)+'/'+str(100)
             score, n = heapq.heappop(self.heap)
             minScore, minLL = -score, (n.lat, n.lon)
             l1, l2 = minLL
@@ -159,7 +160,10 @@ class Graph:
             heapq.heappush(self.heap, (-minScore, n))
 
     def Perturb(self):
+        count=0
         for mac in self.nodes:
+            count+=1
+            print str(count)+'/'+str(len(self.nodes))
             n=self.nodes[mac]
             minScore, minLL = n.GetScore(self, False), (n.lat, n.lon)
             l1, l2 = minLL
