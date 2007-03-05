@@ -4,12 +4,14 @@ import os
 import sys
 import locator
 
+#TODO: I should only grab location every x seconds and linear interpolate between.
+# (Max likelihood?) Something?
 
 class Tracer:
 
     def __init__(self):
         self.locator = locator.Locator()
-        self.ReSampleCount = 3
+        self.ReSampleCount = 2
         self.num = int(sys.argv[1])
         self.total = int(sys.argv[2])
 
