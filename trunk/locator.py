@@ -158,7 +158,7 @@ class Particle:
         if(r<0):
             r=-r
         d = math.log(1+r)
-        if(d>1000):
+        if(d>100):
             d=100
         self.likelihood += (100-d)
         #print 'likelihood:', self.likelihood
