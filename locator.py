@@ -7,7 +7,7 @@ import loc
 class Locator:
 
     def __init__(self):
-        self.numParticles = 3000
+        self.numParticles = 1000
         self.prevMaxParticle = None
         self.updateCount=1
         self.maxParticle = None
@@ -19,9 +19,9 @@ class Locator:
             self.particles.append(Particle())
             self.particles[-1].Init(47.66, -122.31, .08, .08)
         #self.LoadIDFile('./maps/test-11.id')
-        #self.LoadIDFile('./newMap.data')
-        for i in range(10):
-            self.LoadIDFile('./newMap-'+str(i)+'-10.data')
+        self.LoadIDFile('./map2.data')
+        #for i in range(10):
+        #    self.LoadIDFile('./newMap-'+str(i)+'-10.data')
 
     def LoadIDFile(self, name):
         data=open(name).read().split('\n')
@@ -107,6 +107,7 @@ class Locator:
         return (aveLat/count, aveLon/count)
 
     def ReturnBinnedParticle(self):
+        #TODO: grab best bin by sum of likelihood
         bins = {}
         prec=1000
         maxCount,maxKey=0,None

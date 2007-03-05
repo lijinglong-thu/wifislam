@@ -1,6 +1,7 @@
 #! /usr/bin/python2.4
 
 import os
+import sys
 import locator
 
 
@@ -9,11 +10,15 @@ class Tracer:
     def __init__(self):
         self.locator = locator.Locator()
         self.ReSampleCount = 3
+        self.num = int(sys.argv[1])
+        self.total = int(sys.argv[2])
 
     def Init(self):
         self.locator.Init()
 
     def loadTrace(self, name):
+        if(hash(name)%self.total!=self.num):
+            return
         data=open('./traces/'+name).read().split('\n')
         f=open('./paths/new-trace-'+name,'w')
         oldTime,total,count=0,len(data),0
@@ -25,6 +30,11 @@ class Tracer:
             if(len(line)<3):
                 continue
             items=line.split(';')
+            if(len(items)<4):
+                f=open('err.out','a')
+                f.write('Error, Tracer:'+line+'\n')
+                f.close()
+                continue
             mac,essid,ss,t=items[0],items[1],items[2],int(items[3])
             self.locator.Update(mac, 10**((-32-int(ss))/25.0))
             if(t>oldTime):
@@ -55,12 +65,13 @@ class Tracer:
 def main():
     t = Tracer()
     t.Init()
-    t.loadTrace('1172767258.out')
+    #t.loadTrace('1172767258.out')
     #t.loadTrace('1172594315.out')
     #t.loadTrace('1172608619.out')
     files=os.listdir('./traces/')
-    files.reverse()
+    #files.reverse()
     for f in files:
-        t.loadTrace(f)
+        if(f.find('.out')>-1):
+            t.loadTrace(f)
 
 main()
