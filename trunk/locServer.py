@@ -80,34 +80,35 @@ class MyHandler(BaseHTTPRequestHandler):
             #self.wfile.write(str(lat)+','+str(lon))
             #self.wfile.write(post)
             #self.wfile.write('">Your location, sir.</a></html>')
-            data='<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-                  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-                  <html xmlns="http://www.w3.org/1999/xhtml">
-                  <head>
-                  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-                  <title>Google Maps JavaScript API Example</title>
-                  <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAZC_HQ-tQunRCK-TG1Xe41BTTvTmEAFroR9I2PA67ql2zSosX0xR6_TLRY9J0ZqNtRKlZ2hcbb9OGww"
-                  type="text/javascript"></script>
-                  <script type="text/javascript">
-
-                  //<![CDATA[
-
-                  function load() {
-                  if (GBrowserIsCompatible()) {
-                  var map = new GMap2(document.getElementById("map"));
-                  map.setCenter(new GLatLng('+str(lat)+', '+str(lon)+'), 13);'
-                  }
-                  }
-                  
-                  //]]>
-                  </script>
-                  </head>
-                  <body onload="load()" onunload="GUnload()">
-                  <div id="map" style="width: 500px; height: 300px"></div>
-                  </body>
-                  </html>'
+            
+            data=('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"\n'
+                 '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n'
+                  '<html xmlns="http://www.w3.org/1999/xhtml">\n'
+                  ' <head>\n'
+                  ' <meta http-equiv="content-type" content="text/html; charset=utf-8"/>\n'
+                  ' <title>Google Maps JavaScript API Example</title>\n'
+    '<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAZC_HQ-tQunRCK-TG1Xe41BThCcWeYFMLujBthKmziAJWHsaebBSM977wWnnLn6tpPZIi_RyxQK6jvA"\n'
+                  ' type="text/javascript"></script>\n'
+                  ' <script type="text/javascript">\n'
+                  '//<![CDATA[\n'
+                  'function load() {\n'
+                  'if (GBrowserIsCompatible()) {\n'
+                  'var map = new GMap2(document.getElementById("map"));\n'
+                  'map.setCenter(new GLatLng(')
+            data+=str(lat)+', '+str(lon)+'), 16);\n'
+            data+=('map.addControl(new GMapTypeControl());'
+                   'map.setMapType( G_SATELLITE_TYPE ); '
+                   '}\n'
+                  '}\n'
+                  '//]]>\n'
+                  '</script>\n'
+                  '</head>\n'
+                  '<body onload="load()" onunload="GUnload()">\n'
+                  '<div id="map" style="width: 500px; height: 300px"></div>\n'
+                  '</body>\n'
+                  '</html>\n')
             self.wfile.write(data)
-
+            #self.wfile.write(open('test.html').read())
 
             
         elif(self.path.find("/mac?")==0):
@@ -144,7 +145,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
 def main():
     try:
-        server = MyServer(('', 1234), MyHandler)
+        server = MyServer(('', 12345), MyHandler)
         print 'Started server . . .'
         #server.AddMacFile()
         server.serve_forever()
