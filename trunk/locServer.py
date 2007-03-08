@@ -73,13 +73,41 @@ class MyHandler(BaseHTTPRequestHandler):
                 print 'SS:',ss
                 signals.append((mac, int(ss)))
             lat, lon=self.server.Localize(signals)
-            pre='http://maps.google.com/?ie=UTF8&z=17&ll='
-            post='&spn=0.003693,0.007274&t=h'
-            self.wfile.write('<html><a href="')
-            self.wfile.write(pre)
-            self.wfile.write(str(lat)+','+str(lon))
-            self.wfile.write(post)
-            self.wfile.write('">Your location, sir.</a></html>')
+            #pre='http://maps.google.com/?ie=UTF8&z=17&ll='
+            #post='&spn=0.003693,0.007274&t=h'
+            #self.wfile.write('<html><a href="')
+            #self.wfile.write(pre)
+            #self.wfile.write(str(lat)+','+str(lon))
+            #self.wfile.write(post)
+            #self.wfile.write('">Your location, sir.</a></html>')
+            data='<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+                  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+                  <html xmlns="http://www.w3.org/1999/xhtml">
+                  <head>
+                  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+                  <title>Google Maps JavaScript API Example</title>
+                  <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAZC_HQ-tQunRCK-TG1Xe41BTTvTmEAFroR9I2PA67ql2zSosX0xR6_TLRY9J0ZqNtRKlZ2hcbb9OGww"
+                  type="text/javascript"></script>
+                  <script type="text/javascript">
+
+                  //<![CDATA[
+
+                  function load() {
+                  if (GBrowserIsCompatible()) {
+                  var map = new GMap2(document.getElementById("map"));
+                  map.setCenter(new GLatLng('+str(lat)+', '+str(lon)+'), 13);'
+                  }
+                  }
+                  
+                  //]]>
+                  </script>
+                  </head>
+                  <body onload="load()" onunload="GUnload()">
+                  <div id="map" style="width: 500px; height: 300px"></div>
+                  </body>
+                  </html>'
+            self.wfile.write(data)
+
 
             
         elif(self.path.find("/mac?")==0):
