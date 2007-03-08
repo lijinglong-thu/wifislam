@@ -22,11 +22,17 @@ class Locator:
         self.prevDir = None
 
     def Init(self):
+        self.particles = []
+        self.prevLoc = None
+        self.prevDir = None
+        self.maxParticle = None
+        self.updateCount = 1
+        self.prevMaxParticle = None
         for i in range(self.numParticles):
             self.particles.append(Particle())
             self.particles[-1].Init(47.66, -122.31, .08, .08)
         #self.LoadIDFile('./maps/test-20.id')
-        self.LoadIDFile('./newMap.data')
+        self.LoadIDFile('./maps/test-19.id')
         #self.LoadIDFile('./map2.data')
         #for i in range(10):
         #    self.LoadIDFile('./newMap-'+str(i)+'-10.data')
@@ -89,6 +95,7 @@ class Locator:
 
     def GetLocation(self):
         loc = self.ReturnBinnedParticle()
+        #loc = self.ReturnOldBestParticle()
         if(self.prevLoc != None):
             print 'Loc[0]', loc[0]
             print 'Loc[1]', loc[1]
@@ -159,7 +166,7 @@ class Particle:
         self.likelihood = 1
         self.elikelihood = 1
         self.valid = False
-        self.noise = .00002
+        self.noise = .000006
         self.updateCount = 1
 
     def Init(self, lat, lon, r1, r2):
@@ -173,7 +180,7 @@ class Particle:
         r=(d-dist)
         if(r<0):
             r=-r
-        d = math.log(1+r)
+        d = math.log(1+r*r)
         if(d>100):
             d=100
         self.updateCount+=1
