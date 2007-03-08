@@ -22,7 +22,7 @@ class Tracer:
         if(hash(name)%self.total!=self.num):
             return
         data=open('./traces/'+name).read().split('\n')
-        f=open('./paths/new-trace-'+name,'w')
+        f=open('./paths/revised-trace-'+name,'w')
         oldTime,total,count=0,len(data),0
         oldLat, oldLon = 0.0, 0.0
         ooldLat, ooldLon = 0.0, 0.0
@@ -67,13 +67,13 @@ class Tracer:
 def main():
     t = Tracer()
     t.Init()
-    #t.loadTrace('1172767258.out')
+    t.loadTrace('1172767258.out')
     #t.loadTrace('1172594315.out')
     #t.loadTrace('1172608619.out')
-    files=os.listdir('./traces/')
+    #files=os.listdir('./traces/')
     #files.reverse()
-    for f in files:
-        if(f.find('.out')>-1):
-            t.loadTrace(f)
+    #for f in files:
+    #    if(f.find('.out')>-1):
+    #        t.loadTrace(f)
 
 main()
