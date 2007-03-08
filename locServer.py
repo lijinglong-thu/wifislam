@@ -28,8 +28,17 @@ class MyServer(HTTPServer):
             except ValueError:
                 pass
 
-    def DoStuff(self):
-        print self.macToLL
+    def Localize(self, signals):
+        self.locator.Init()
+        for i in range(10):
+            for signal in signals:
+                mac, ss = signal
+                self.locator.Update(mac, 10**((-32-ss)/25.0))
+            self.locator.ReSample()
+        for signal in signals:
+            mac, ss = signal
+            self.locator.Update(mac, 10**((-32-ss)/25.0))
+        return self.locator.ReturnOldBestParticle()
 
 
 class MyHandler(BaseHTTPRequestHandler):
@@ -57,10 +66,22 @@ class MyHandler(BaseHTTPRequestHandler):
             self.end_headers()
             query=self.path[5:]
             pairs=query.split('&')
+            signals=[]
             for pair in pairs:
                 mac,ss=pair.split('=')
                 print 'Mac:',mac
                 print 'SS:',ss
+                signals.append((mac, int(ss)))
+            lat, lon=self.server.Localize(signals)
+            pre='http://maps.google.com/?ie=UTF8&z=17&ll='
+            post='&spn=0.003693,0.007274&t=h'
+            self.wfile.write('<html><a href="')
+            self.wfile.write(pre)
+            self.wfile.write(str(lat)+','+str(lon))
+            self.wfile.write(post)
+            self.wfile.write('">Your location, sir.</a></html>')
+
+            
         elif(self.path.find("/mac?")==0):
             mac=self.path[5:]
             mac=mac.replace(':','')
