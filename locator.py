@@ -12,7 +12,7 @@ import loc
 class Locator:
 
     def __init__(self):
-        self.numParticles = 2000
+        self.numParticles = 8000
         self.prevMaxParticle = None
         self.updateCount=1
         self.maxParticle = None
@@ -39,7 +39,7 @@ class Locator:
         self.particles = []
         for i in range(self.numParticles):
             self.particles.append(Particle())
-            self.particles[-1].Init(47.66, -122.31, .04, .04)
+            self.particles[-1].Init(47.66, -122.31, .03, .03)
 
     def InitMACParticles(self, macs):
         # This should init small gaussians around each AP with mac in list
@@ -119,11 +119,20 @@ class Locator:
         for p in self.particles:
             p.Perturb(self.prevDir)
 
+
+    def WriteParticles(self, name):
+        f=open(name, 'w')
+        for p in self.particles:
+            f.write(str(p.lat)+'\t'+str(p.lon)+'\t'+str(p.likelihood)+'\n')
+        f.close()
+
+
     def SaveParticles(self, name):
         f=open(name, 'w')
         for p in self.particles:
             f.write(str(p.lat)+'\t'+str(p.lon)+'\t'+str(p.likelihood)+'\n')
         f.close()
+
 
     def GetLocation(self):
         loc = self.ReturnBinnedParticle()
@@ -197,7 +206,7 @@ class Particle:
         self.likelihood = 1
         self.elikelihood = 1
         self.valid = False
-        self.noise = .000006
+        self.noise = .000002
         self.updateCount = 1
 
     def Init(self, lat, lon, r1, r2):
