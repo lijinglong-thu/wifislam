@@ -5,6 +5,11 @@ import os
 
 #$ dot -Tgif second.dot -o second.gif -v
 
+
+# TODO: This is the class that needs revision to fix the awful ./networks repo.
+#       We should dynamicly build up the shortest distance between networks,
+#       Also merge all of the ID files into one master file.
+
 class Grapher:
 
     def __init__(self):
