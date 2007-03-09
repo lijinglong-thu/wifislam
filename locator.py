@@ -20,8 +20,10 @@ class Locator:
         self.macToLL = {}
         self.prevLoc = None
         self.prevDir = None
+        self.sampleCount = 1
 
     def Init(self):
+        self.sampleCount = 1
         self.particles = []
         self.prevLoc = None
         self.prevDir = None
@@ -59,6 +61,8 @@ class Locator:
             print "Don't have a location for:", mac
 
     def ReSample(self):
+        self.WriteParticles("particles-"+str(self.sampleCount)+".data")
+        self.sampleCount += 1
         newParticles = []
         totalLikelihood, maxLikelihood = 0.0, -1
         if(self.maxParticle!=None):
@@ -93,9 +97,14 @@ class Locator:
         for p in self.particles:
             p.Perturb(self.prevDir)
 
+    def SaveParticles(self, name):
+        f=open(name, 'w')
+        for p in self.particles:
+            f.write(str(p.lat)+'\t'+str(p.lon)+'\t'+str(p.likelihood)+'\n')
+        f.close()
+
     def GetLocation(self):
         loc = self.ReturnBinnedParticle()
-        #loc = self.ReturnOldBestParticle()
         if(self.prevLoc != None):
             print 'Loc[0]', loc[0]
             print 'Loc[1]', loc[1]
