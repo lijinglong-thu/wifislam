@@ -18,26 +18,47 @@ class Locator:
         self.maxParticle = None
         self.particles = []
         self.macToLL = {}
+        self.ESStoMAC = {}
         self.prevLoc = None
         self.prevDir = None
         self.sampleCount = 1
 
     def Init(self):
         self.sampleCount = 1
-        self.particles = []
         self.prevLoc = None
         self.prevDir = None
         self.maxParticle = None
         self.updateCount = 1
         self.prevMaxParticle = None
+        self.InitGaussParticles()
+        #self.LoadIDFile('./maps/test-20.id')
+        self.LoadIDFile('./maps/test-67.id')
+        #self.LoadIDFile('./map2.data')
+
+    def InitGaussParticles(self):
+        self.particles = []
         for i in range(self.numParticles):
             self.particles.append(Particle())
-            self.particles[-1].Init(47.66, -122.31, .08, .08)
-        #self.LoadIDFile('./maps/test-20.id')
-        self.LoadIDFile('./maps/test-19.id')
-        #self.LoadIDFile('./map2.data')
-        #for i in range(10):
-        #    self.LoadIDFile('./newMap-'+str(i)+'-10.data')
+            self.particles[-1].Init(47.66, -122.31, .04, .04)
+
+    def InitMACParticles(self, macs):
+        # This should init small gaussians around each AP with mac in list
+        self.particles = []
+        count=0
+        for mac in macs:
+            if(mac in self.macToLL):
+                count+=1
+        for mac in macs:
+            for i in range(self.numParticles / count):
+                self.particles.append(Particle())
+                lat,lon = self.macToLL[mac]
+                self.particles[-1].Init(lat, lon, .001, .001)        
+
+    def InitESSIDParticles(self, ids):
+        macs=[]
+        for ess in ids:
+            macs+=self.ESStoMAC[ess]
+        self.InitMACParticles(macs)
 
     def LoadIDFile(self, name):
         data=open(name).read().split('\n')
@@ -47,6 +68,7 @@ class Locator:
             try:
                 mac, lon, lat = line.split('\t')
                 self.macToLL[mac] = (float(lat), float(lon))
+                # TODO: load ess -> mac mapping.
             except ValueError:
                 print 'Error:',line
 
