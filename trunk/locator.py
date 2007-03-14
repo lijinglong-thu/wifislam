@@ -31,8 +31,8 @@ class Locator:
         self.updateCount = 1
         self.prevMaxParticle = None
         self.InitGaussParticles()
-        #self.LoadIDFile('./maps/test-20.id')
-        self.LoadIDFile('./maps/test-67.id')
+        self.LoadIDFile('./maps/test-18.id')
+        #self.LoadIDFile('./maps/test-67.id')
         #self.LoadIDFile('./map2.data')
 
     def InitGaussParticles(self):
@@ -226,6 +226,7 @@ class Particle:
         self.updateCount+=1
         self.likelihood += d
         self.valid = False
+        # This should be using a guassian!
 
     def GetLikelihood(self):
         if(not self.valid):

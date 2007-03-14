@@ -143,7 +143,7 @@ class Graph:
             heapq.heappush(self.heap, (-n.GetScore(self, True), n))
 
     def PerturbByHeap(self):
-        for i in range(100):
+        for i in range(10):
             print str(i)+'/'+str(100)
             score, n = heapq.heappop(self.heap)
             minScore, minLL = -score, (n.lat, n.lon)
@@ -169,7 +169,7 @@ class Graph:
             l1, l2 = minLL
             if(minLL==(0.0,0.0)):
                continue
-            for i in range(30):
+            for i in range(60):
                 n.Perturb(l1, l2)
                 s = n.GetScore(self, False)
                 if(s < minScore):
@@ -222,7 +222,7 @@ class Node:
             d=loc.LatLongDist(self.lat, actual2.lat, self.lon, actual2.lon)
             if(d>dist):
                 if((actual2.fixed)|(self.fixed)):
-                    totalScore += 100 * (d/dist-1.0)
+                    totalScore += 50 * (d/dist-1.0)
                 else:
                     totalScore += (d/dist-1.0)
         if(not all):
@@ -234,7 +234,7 @@ class Node:
             if((actual2.root==None)|(actual2.lat==0)):
                 continue
             d=loc.LatLongDist(self.lat, actual2.lat, self.lon, actual2.lon)
-            if((d<300)&(d>0)):
+            if((d<200)&(d>0)):
                 totalScore += (400/d - .5)
         return totalScore
 
@@ -244,14 +244,14 @@ class Node:
             return
         r=random.random()
         if(r<.1):
+            a=random.gauss(l1, .00001)
+            b=random.gauss(l2, .00001)
+        elif(r>.66):
+            a=random.gauss(l1, .002)
+            b=random.gauss(l2, .002)
+        else:
             a=random.gauss(l1, .0001)
             b=random.gauss(l2, .0001)
-        elif(r>.66):
-            a=random.gauss(l1, .02)
-            b=random.gauss(l2, .02)
-        else:
-            a=random.gauss(l1, .001)
-            b=random.gauss(l2, .001)
         self.lat = a
         self.lon = b
 
