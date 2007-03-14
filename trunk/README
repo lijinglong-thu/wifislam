@@ -1,0 +1,17 @@
+Run locServer.py on herbert.cs.washington.edu for location serving.
+  Queries should be of the form:
+    http://www.herbert.cs.washington.edu:12345/loc?mac1=-45&mac2=-67?macn=-55
+
+Run "sudo ./wifi.py nope" for trace collecting.
+  type "set location Home" to add a location.
+  User must later manually create file ./locations/Home.id" with lat and lon.
+
+Run "sudo ./wifi.py localize" to perform localization and trace collection.
+
+You should also download and untar in the wifislam directory:
+  http://www.cs.washington.edu/homes/jhebert/networks.tgz
+
+If something doesn't work well because I didn't document what should be done,
+please email me at jhebert@cs.washington.edu.
+
+Copyright Jack Hebert 2007.
