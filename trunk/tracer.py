@@ -7,6 +7,10 @@ import locator
 #TODO: I should only grab location every x seconds and linear interpolate between.
 # (Max likelihood?) Something?
 
+"""
+This uses the locator to plot the path of a trace over the map of WIFI locations.
+"""
+
 class Tracer:
 
     def __init__(self):

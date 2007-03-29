@@ -5,6 +5,9 @@ import time
 import locator
 
 class DataPrinter:
+    """
+    This class handles formatting trace data into a matrix of points for use with ISOMAP.
+    """
 
     def __init__(self):
         self.APs = {}

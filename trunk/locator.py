@@ -4,11 +4,16 @@ import math
 import random
 import loc
 
+# TODO: Should be using a guassian likelihood model. Should plot distributions to better tweak variances.
+#
+
 # TODO: can I do better with making paths out of particle estimates?
 #       Perhaps something with estimating current velocity and adding that
 #       to the perturb gaussians?
 
-
+"""
+These two classes handle the particle filter for localiztion from MAC addresses.
+"""
 class Locator:
 
     def __init__(self):
@@ -200,6 +205,9 @@ class Locator:
 
 
 class Particle:
+    """
+    Each single particle represents a guess about the actual location, along with a likelihood given observations.
+    """
     def __init__(self):
         self.lat = 0.0
         self.lon = 0.0

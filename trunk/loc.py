@@ -3,6 +3,9 @@
 
 import math
 
+"""
+This function finds approximate distance between two latitude and longitude pairs.
+"""
 
 
 def DegToRad(ang):

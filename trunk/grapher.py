@@ -10,8 +10,12 @@ import os
 #       We should dynamicly build up the shortest distance between networks,
 #       Also merge all of the ID files into one master file.
 
-class Grapher:
 
+
+class Grapher:
+    """
+    This class handles prepping data for use with the graphing utility 'dot' from GRAPHVIZ.
+    """
     def __init__(self):
         self.macToESSID = {}
         self.networkMap = {}
