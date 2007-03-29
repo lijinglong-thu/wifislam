@@ -5,6 +5,12 @@ import time
 import threading
 import locator
 
+"""
+This does basic trace gathering as well as computing network adjaceny bounds in real-time.
+This should definately be seperated into multiple parts so as the trace gathering always
+works correctly and predictably.
+"""
+
 class Scanner:
 
     def __init__(self):

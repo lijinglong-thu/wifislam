@@ -6,6 +6,11 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import locator
 
 
+"""
+This is a bare-bones start to a location which can give the user their location from the set of visible MAC addresses
+over a standard HTTP query.
+"""
+
 class MyServer(HTTPServer):
     def __init__(self, server_address, HandlerClass):
         HTTPServer.__init__(self, server_address, HandlerClass)

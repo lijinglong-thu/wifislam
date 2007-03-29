@@ -1,6 +1,12 @@
 #!/usr/bin/env python2.4
 
 
+"""
+This was a simply ustility to ouput the number of visible access points over time.
+Could be done a bit better with some kernel rounding, so if an AP seen at t_1 and t_3, it
+should be shown for t_2 as well.
+"""
+
 
 def loadDataFile(name):
     f=open('./AccessPoints2.data','w')
