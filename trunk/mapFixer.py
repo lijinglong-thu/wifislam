@@ -11,17 +11,19 @@ class MapFixer:
         self.macLocs = {}
         self.num = 0
         self.total = 1
+        self.locator = locator.locator()
 
     def Init(self):
         self.LoadData()
         self.num=int(sys.argv[1])
         self.total=int(sys.argv[2])
+        self.locator.Init()
 
     def LoadData(self):
         traces= os.listdir('./traces/')
         paths = os.listdir('./paths/')
-        for file in paths:
-            f=file[10:]
+        for fileName in paths:
+            f=fileName[10:]
             if(f in traces):
                 print f
                 self.LoadDataFile(f)
@@ -36,12 +38,14 @@ class MapFixer:
             except ValueError:
                 if(len(line)>1):
                     print 'Error: LoadMacLocs:', line
-                pass
 
     def LoadDataFile(self, f):
-        traceData=open('./traces/'+f).read().split('\n')
-        pathData=open('./paths/new-trace-'+f).read().split('\n')
+        timeToLoc = self.LoadPath(f)
+        self.LoadTrace(f, timeToLoc)
+
+    def LoadPath(self, f):
         timeToLoc={}
+        pathData=open('./paths/new-trace-'+f).read().split('\n')
         for line in pathData:
             try:
                 items=line.split('\t')
@@ -51,11 +55,14 @@ class MapFixer:
                 pass
             except ValueError:
                 pass
+        return timeToLoc
+
+    def LoadTrace(self, f, timeToLoc):
+        traceData=open('./traces/'+f).read().split('\n')
         for line in traceData:
             try:
                 items=line.split(';')
-                mac,essid,ss,t=items[0],items[1],items[2],items[3]
-                t=int(t)
+                mac,essid,ss,t=items[0],items[1],items[2],int(items[3])
                 mac=mac.replace(':','')
                 if(t in timeToLoc):
                     if(not mac in self.macs):
@@ -68,8 +75,7 @@ class MapFixer:
 
     def ReviseGraph(self):
         print 'Revising Graph . . .'
-        total=len(self.macs)
-        count=0
+        total,count=len(self.macs),0
         f=open('newMap-'+str(self.num)+'-'+str(self.total)+'.data','w')
         for mac in self.macs:
             # TODO: if not in macLocs, then maybe assign default
@@ -81,7 +87,9 @@ class MapFixer:
                 print str(count)+'/'+str(total)
                 self.ReviseNode(mac, f)
                 f.flush()
+        f.close()
 
+    # TODO: This should use locator to particleFilter it.
     def ReviseNode(self, mac, f):
         lat,lon=self.macLocs[mac]
         readings,particles=self.macs[mac],[]
@@ -107,7 +115,6 @@ class MapFixer:
             aveLon+=p.lon*p.GetLikelihood()
             count+=p.GetLikelihood()
         return (aveLat/count, aveLon/count)
-        
 
     def GaussParticle(self, lat, lon):
         p=locator.Particle()
@@ -121,5 +128,3 @@ def main():
     m.ReviseGraph()
 
 main()
-
-    
