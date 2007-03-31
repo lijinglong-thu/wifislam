@@ -44,7 +44,7 @@ class Locator:
         self.particles = []
         for i in range(self.numParticles):
             self.particles.append(Particle())
-            self.particles[-1].Init(47.66, -122.31, .03, .03)
+            self.particles[-1].Init(47.66, -122.31, .01, .01)
 
     def InitMACParticles(self, macs):
         # This should init small gaussians around each AP with mac in list
@@ -88,7 +88,7 @@ class Locator:
             print "Don't have a location for:", mac
 
     def ReSample(self):
-        self.WriteParticles("particles-"+str(self.sampleCount)+".data")
+        self.WriteParticles("2particles-"+str(self.sampleCount)+".data")
         self.sampleCount += 1
         newParticles = []
         totalLikelihood, maxLikelihood = 0.0, -1
@@ -119,7 +119,7 @@ class Locator:
                 break
         while(len(newParticles)<self.numParticles):
             newParticles.append(Particle())
-            newParticles[-1].Init(47.66, -122.31, .03, .03)
+            newParticles[-1].Init(47.665, -122.31, .01, .01)
         self.particles = newParticles
         for p in self.particles:
             p.Perturb(self.prevDir)
@@ -214,7 +214,7 @@ class Particle:
         self.likelihood = 1
         self.elikelihood = 1
         self.valid = False
-        self.noise = .000002
+        self.noise = .00005
         self.updateCount = 1
 
     def Init(self, lat, lon, r1, r2):
@@ -222,6 +222,8 @@ class Particle:
         self.lon = random.gauss(lon, r2)
         self.likelihood = 1
         self.updateCount = 1
+        if((self.lat<47.645)|(self.lat>47.68)|(self.lon<-122.34)|(self.lon>-122.27)):
+            self.Init(lat, lon, r1, r2)
 
     def Update(self, lat, lon, dist):
         d = loc.LatLongDist(self.lat, lat, self.lon, lon)
