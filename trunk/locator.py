@@ -4,7 +4,7 @@ import math
 import random
 import loc
 
-# TODO: Should be using a guassian likelihood model. Should plot distributions to better tweak variances.
+# TODO: Should be using a guassian likelihood model.
 #
 
 # TODO: can I do better with making paths out of particle estimates?
@@ -124,20 +124,17 @@ class Locator:
         for p in self.particles:
             p.Perturb(self.prevDir)
 
-
     def WriteParticles(self, name):
         f=open(name, 'w')
         for p in self.particles:
             f.write(str(p.lat)+'\t'+str(p.lon)+'\t'+str(p.likelihood)+'\n')
         f.close()
 
-
     def SaveParticles(self, name):
         f=open(name, 'w')
         for p in self.particles:
             f.write(str(p.lat)+'\t'+str(p.lon)+'\t'+str(p.likelihood)+'\n')
         f.close()
-
 
     def GetLocation(self):
         loc = self.ReturnBinnedParticle()
@@ -206,7 +203,8 @@ class Locator:
 
 class Particle:
     """
-    Each single particle represents a guess about the actual location, along with a likelihood given observations.
+    Each single particle represents a guess about the actual location,
+    along with a likelihood given observations.
     """
     def __init__(self):
         self.lat = 0.0
@@ -222,11 +220,15 @@ class Particle:
         self.lon = random.gauss(lon, r2)
         self.likelihood = 1
         self.updateCount = 1
-        if((self.lat<47.645)|(self.lat>47.68)|(self.lon<-122.34)|(self.lon>-122.27)):
+        if((self.lat<47.645)|(self.lat>47.68)|
+           (self.lon<-122.34)|(self.lon>-122.27)):
             self.Init(lat, lon, r1, r2)
 
     def Update(self, lat, lon, dist):
         d = loc.LatLongDist(self.lat, lat, self.lon, lon)
+        self.Prob2(d, dist)
+
+    def Prob1(self, d, dist):
         r=(d-dist)
         if(r<0):
             r=-r
@@ -236,7 +238,13 @@ class Particle:
         self.updateCount+=1
         self.likelihood += d
         self.valid = False
-        # This should be using a guassian!
+
+    def Prob2(self, d, dist):
+        r = (d-dist)*(d-dist)
+        r = -r / (2*10*10)
+        self.updateCount+=1
+        self.likelihood += r
+        self.valid = False
 
     def GetLikelihood(self):
         if(not self.valid):
