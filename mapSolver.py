@@ -22,23 +22,14 @@ class GraphSolver:
 
     def Solve(self):
         self.InitSolve()
-        print '[]'
-        #time.sleep(5)
         self.graph.InitHeap()
-        print '[]'
-        #time.sleep(5)
         for i in range(1000):
             print i, ': Current Score:', self.GetGraphScore()
             print 'Perturbing . . .'
             self.graph.Perturb()
-            print 'Sleeping . . .'
-            #time.sleep(10)
             print 'Perturbing by heap . . .'
             self.graph.PerturbByHeap()
             self.SaveGraph(i)
-            print 'Sleeping . . .'
-            #time.sleep(10)
-
 
     def SaveGraph(self, i):
         self.SaveGraphNames(i)
@@ -92,6 +83,7 @@ class GraphSolver:
 
     def InitQueue(self):
         toReturn = Queue.Queue()
+        print str(len(self.graph.fixedPoints)), 'fixed points.'
         for node in self.graph.fixedPoints:
             node.root = node.uniqueID
             node.fixed = True
@@ -118,8 +110,7 @@ class Graph:
             self.nodes[mac] = Node(mac, grapher.macToESSID[mac])
         for loc in grapher.locationMap:
             self.nodes[loc] = Node(loc, loc)
-            print 'LL:',grapher.locationToLL[loc]
-            self.nodes[loc].lat, self.nodes[loc].lon = grapher.locationToLL[loc]
+            self.nodes[loc].lat,self.nodes[loc].lon = grapher.locationToLL[loc]
             if(grapher.locationToLL[loc]!=(0,0)):
                 self.fixedPoints.append(self.nodes[loc])
 
@@ -140,12 +131,16 @@ class Graph:
             if(i%20 ==0):
                 print 'Iter:', i
             n = self.nodes[mac]
+            if(n.fixed):
+                continue
             heapq.heappush(self.heap, (-n.GetScore(self, True), n))
 
     def PerturbByHeap(self):
         for i in range(100):
             print str(i)+'/'+str(100)
             score, n = heapq.heappop(self.heap)
+            if(n.fixed):
+                continue
             minScore, minLL = -score, (n.lat, n.lon)
             l1, l2 = minLL
             if(minLL==(0.0,0.0)):
@@ -165,6 +160,8 @@ class Graph:
             count+=1
             print str(count)+'/'+str(len(self.nodes))
             n=self.nodes[mac]
+            if(n.fixed):
+                continue
             minScore, minLL = n.GetScore(self, False), (n.lat, n.lon)
             l1, l2 = minLL
             if(minLL==(0.0,0.0)):
@@ -243,10 +240,10 @@ class Node:
         if(self.fixed):
             return
         r=random.random()
-        if(r<.1):
+        if(r<.35):
             a=random.gauss(l1, .0001)
             b=random.gauss(l2, .0001)
-        elif(r>.66):
+        elif(r>.86):
             a=random.gauss(l1, .01)
             b=random.gauss(l2, .01)
         else:
