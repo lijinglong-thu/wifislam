@@ -4,12 +4,11 @@ import math
 import random
 import loc
 
-# TODO: Should be using a guassian likelihood model.
-#
-
 # TODO: can I do better with making paths out of particle estimates?
 #       Perhaps something with estimating current velocity and adding that
 #       to the perturb gaussians?
+
+# TODO: PrevDir on a global basis ok?
 
 """
 These two classes handle the particle filter for localiztion from MAC addresses.
@@ -27,6 +26,8 @@ class Locator:
         self.prevLoc = None
         self.prevDir = None
         self.sampleCount = 1
+        self.aveLat, self.aveLon = 47.66, -122.31
+        self.latVar, self.lonVar = .01, .01
 
     def Init(self):
         self.sampleCount = 1
@@ -37,22 +38,18 @@ class Locator:
         self.prevMaxParticle = None
         self.InitGaussParticles()
         self.LoadIDFile('./maps/test-18.id')
-        #self.LoadIDFile('./maps/test-67.id')
-        #self.LoadIDFile('./map2.data')
 
     def InitGaussParticles(self):
         self.particles = []
-        for i in range(self.numParticles):
+        self.FilloutGaussParticles()
+
+    def FilloutGaussParticles(self):
+        while(len(self.particles)<self.numParticles):
             self.particles.append(Particle())
-            self.particles[-1].Init(47.66, -122.31, .01, .01)
+            self.particles[-1].Init(self.aveLat, self.aveLon, self.latVar, self.lonVar)
 
     def InitMACParticles(self, macs):
-        # This should init small gaussians around each AP with mac in list
-        self.particles = []
-        count=0
-        for mac in macs:
-            if(mac in self.macToLL):
-                count+=1
+        count=len([1 for mac in macs if (mac in self.macToLL)])
         for mac in macs:
             for i in range(self.numParticles / count):
                 self.particles.append(Particle())
@@ -60,9 +57,7 @@ class Locator:
                 self.particles[-1].Init(lat, lon, .001, .001)        
 
     def InitESSIDParticles(self, ids):
-        macs=[]
-        for ess in ids:
-            macs+=self.ESStoMAC[ess]
+        macs = [self.ESStoMAC[ess] for ess in ids]
         self.InitMACParticles(macs)
 
     def LoadIDFile(self, name):
@@ -117,10 +112,8 @@ class Locator:
                 goal += delta
             if(len(newParticles)+20>self.numParticles):
                 break
-        while(len(newParticles)<self.numParticles):
-            newParticles.append(Particle())
-            newParticles[-1].Init(47.665, -122.31, .01, .01)
         self.particles = newParticles
+        self.FilloutGaussParticles()
         for p in self.particles:
             p.Perturb(self.prevDir)
 
@@ -130,26 +123,17 @@ class Locator:
             f.write(str(p.lat)+'\t'+str(p.lon)+'\t'+str(p.likelihood)+'\n')
         f.close()
 
-    def SaveParticles(self, name):
-        f=open(name, 'w')
-        for p in self.particles:
-            f.write(str(p.lat)+'\t'+str(p.lon)+'\t'+str(p.likelihood)+'\n')
-        f.close()
-
     def GetLocation(self):
         loc = self.ReturnBinnedParticle()
         if(self.prevLoc != None):
-            print 'Loc[0]', loc[0]
-            print 'Loc[1]', loc[1]
             self.prevDir = (loc[0]-self.prevLoc[0], loc[1]-self.prevLoc[1])
-            print 'PrevDir:', self.prevDir
         self.prevLoc = loc
         return loc
 
     def ReturnOldBestParticle(self):
         if(self.prevMaxParticle!=None):
-            return ((self.maxParticle.lat+self.maxParticle.lat)/2,
-                    (self.maxParticle.lon+self.maxParticle.lon)/2)
+            return ((self.maxParticle.lat+self.prevMaxParticle.lat)/2,
+                    (self.maxParticle.lon+self.prevMaxParticle.lon)/2)
         if(self.maxParticle!=None):
             return (self.maxParticle.lat, self.maxParticle.lon)
         else:
@@ -171,9 +155,7 @@ class Locator:
         return (aveLat/count, aveLon/count)
 
     def ReturnBinnedParticle(self):
-        sums,bins = {}, {}
-        prec=1000
-        maxKey=None
+        sums,bins,prec,maxKey = {}, {}, 1000, None
         for p in self.particles:
             key1=(1, int(p.lat*prec)/prec, int(p.lon*prec)/prec)
             key2=(2, int(p.lat*prec+.5)/prec, int(p.lon*prec)/prec)
@@ -181,8 +163,7 @@ class Locator:
             key4=(4, int(p.lat*prec+.5)/prec, int(p.lon*prec+.5)/prec)
             for key in [key1, key2, key3, key4]:
                 if(not key in bins):
-                    bins[key]=[]
-                    sums[key]=0.0
+                    bins[key],sums[key]=[],0.0
                 bins[key].append(p)
                 sums[key]+=p.GetLikelihood()
                 if(maxKey==None):
@@ -229,10 +210,7 @@ class Particle:
         self.Prob2(d, dist)
 
     def Prob1(self, d, dist):
-        r=(d-dist)
-        if(r<0):
-            r=-r
-        d = math.log(1+r*r)
+        d = math.log(1+(d-dist)*(d-dist))
         if(d>100):
             d=100
         self.updateCount+=1
@@ -258,13 +236,11 @@ class Particle:
         if(dir!=None):
             self.lat+=dir[0]
             self.lon+=dir[1]
-        self.likelihood = 1
-        self.updateCount=1
+        self.likelihood, self.updateCount = 1,1
 
     def Copy(self):
         p = Particle()
-        p.lat = self.lat
-        p.lon = self.lon
+        p.lat, p.lon = self.lat, self.lon
         p.likelihood = self.likelihood
         p.updateCount = self.updateCount
         return p
