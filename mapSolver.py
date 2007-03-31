@@ -143,7 +143,7 @@ class Graph:
             heapq.heappush(self.heap, (-n.GetScore(self, True), n))
 
     def PerturbByHeap(self):
-        for i in range(10):
+        for i in range(100):
             print str(i)+'/'+str(100)
             score, n = heapq.heappop(self.heap)
             minScore, minLL = -score, (n.lat, n.lon)
@@ -244,14 +244,14 @@ class Node:
             return
         r=random.random()
         if(r<.1):
-            a=random.gauss(l1, .00001)
-            b=random.gauss(l2, .00001)
-        elif(r>.66):
-            a=random.gauss(l1, .002)
-            b=random.gauss(l2, .002)
-        else:
             a=random.gauss(l1, .0001)
             b=random.gauss(l2, .0001)
+        elif(r>.66):
+            a=random.gauss(l1, .01)
+            b=random.gauss(l2, .01)
+        else:
+            a=random.gauss(l1, .001)
+            b=random.gauss(l2, .001)
         self.lat = a
         self.lon = b
 
